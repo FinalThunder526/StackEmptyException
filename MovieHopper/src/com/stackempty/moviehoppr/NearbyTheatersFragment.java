@@ -122,7 +122,7 @@ public class NearbyTheatersFragment extends ListFragment {
 	 * @author Sarang
 	 */
 	private class LoadTheatreDetails extends
-			AsyncTask<JSONArray, Void, Boolean> {
+			AsyncTask<JSONArray, Void, String[]> {
 		ProgressDialog pd;
 
 		@Override
@@ -132,7 +132,7 @@ public class NearbyTheatersFragment extends ListFragment {
 		}
 
 		@Override
-		protected Boolean doInBackground(JSONArray... params) {
+		protected String[] doInBackground(JSONArray... params) {
 			JSONArray myArray = params[0];
 			String[] stringArray = new String[myArray.length()];
 			try {
@@ -143,18 +143,18 @@ public class NearbyTheatersFragment extends ListFragment {
 					stringArray[i] = s;
 				}
 			} catch (JSONException e) {
-				return false;
+				return null;
 			}
-
-			setListAdapter(new ArrayAdapter<String>(getActivity(),
-					android.R.layout.simple_list_item_1, stringArray));
-
-			return true;
+			return stringArray;
 		}
 
 		@Override
-		protected void onPostExecute(Boolean result) {
+		protected void onPostExecute(String[] result) {
 			pd.dismiss();
+
+			setListAdapter(new ArrayAdapter<String>(getActivity(),
+					android.R.layout.simple_list_item_1, result));
+
 			Toast.makeText(getActivity(), "Theatre loading success: " + result,
 					Toast.LENGTH_SHORT).show();
 		}

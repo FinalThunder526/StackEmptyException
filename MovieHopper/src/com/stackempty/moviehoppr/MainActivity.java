@@ -25,7 +25,7 @@ public class MainActivity extends ActionBarActivity implements
 		NavigationDrawerFragment.NavigationDrawerCallbacks {
 
 	public static final String TMSAPI_KEY = "kcabtt7gmfemuzm949nex5dv";
-	public static final int ZIPCODE_KEY = 0;
+	public static final int ZIPCODE_KEY = 1;
 
 	/**
 	 * Fragment managing the behaviors, interactions and presentation of the
