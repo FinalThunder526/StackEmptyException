@@ -114,7 +114,7 @@ public class MainActivity extends ActionBarActivity implements
 			if (resultCode == RESULT_OK) {
 				FragmentManager fragmentManager = getSupportFragmentManager();
 				fragmentManager.beginTransaction()
-						.replace(R.id.container, NearbyTheatersFragment.newInstance(intent.getIntExtra("" + ZIPCODE_KEY, 0)))
+						.replace(R.id.container, NearbyTheatersFragment.newInstance(intent.getIntExtra("" + ZIPCODE_KEY, 98052)))
 						.commit();
 			}
 		}
