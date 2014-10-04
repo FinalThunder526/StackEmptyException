@@ -19,7 +19,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
@@ -32,31 +34,20 @@ import android.widget.Toast;
 
 import com.stackempty.moviehopper.R;
 
-public class NearbyTheatersFragment extends ListFragment {
+public class NearbyTheatresActivity extends ListActivity {
 	String baseEndpoint = "http://data.tmsapi.com/v1/";
 
 	String[] theatreStringArray;
 
-	public static NearbyTheatersFragment newInstance(int zipCode) {
-		NearbyTheatersFragment fragment = new NearbyTheatersFragment();
-		Bundle args = new Bundle();
-		args.putInt(MainActivity.ZIPCODE_KEY + "", zipCode);
-		fragment.setArguments(args);
-		return fragment;
-	}
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_nearbytheatres);
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.fragment_nearbytheaters,
-				container, false);
+		Intent intent = getIntent();
+		int zip = Integer.parseInt(intent.getStringExtra(""
+				+ MainActivity.ZIPCODE_KEY));
 
-		Bundle args = getArguments();
-		int zip = args.getInt(MainActivity.ZIPCODE_KEY + "");
-		// ONLINE: Downloads theatre
 		new GetTheatresTask().execute(zip);
-
-		return rootView;
 	}
 
 	/**
@@ -70,7 +61,7 @@ public class NearbyTheatersFragment extends ListFragment {
 
 		@Override
 		protected void onPreExecute() {
-			pd = ProgressDialog.show(getActivity(), "",
+			pd = ProgressDialog.show(NearbyTheatresActivity.this, "",
 					"Downloading information...");
 		}
 
@@ -127,7 +118,7 @@ public class NearbyTheatersFragment extends ListFragment {
 
 		@Override
 		protected void onPreExecute() {
-			pd = ProgressDialog.show(getActivity(), "",
+			pd = ProgressDialog.show(NearbyTheatresActivity.this, "",
 					"Loading information...");
 		}
 
@@ -139,7 +130,7 @@ public class NearbyTheatersFragment extends ListFragment {
 				for (int i = 0; i < myArray.length(); i++) {
 					JSONObject obj = myArray.getJSONObject(i);
 					String s = obj.getString("name");
-					s += obj.getString("theatreId");
+					s += ", id:" + obj.getString("theatreId");
 					stringArray[i] = s;
 				}
 			} catch (JSONException e) {
@@ -152,11 +143,13 @@ public class NearbyTheatersFragment extends ListFragment {
 		protected void onPostExecute(String[] result) {
 			pd.dismiss();
 
-			setListAdapter(new ArrayAdapter<String>(getActivity(),
+			setListAdapter(new ArrayAdapter<String>(
+					NearbyTheatresActivity.this,
 					android.R.layout.simple_list_item_1, result));
 
-			Toast.makeText(getActivity(), "Theatre loading success: " + result,
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(NearbyTheatresActivity.this,
+					"Theatre loading success: " + result, Toast.LENGTH_SHORT)
+					.show();
 		}
 	}
 }

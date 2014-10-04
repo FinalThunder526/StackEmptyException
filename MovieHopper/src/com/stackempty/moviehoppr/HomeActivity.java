@@ -19,28 +19,25 @@ import android.widget.EditText;
 
 import com.stackempty.moviehopper.R;
 
-public class HomeFragment extends Fragment {
+public class HomeActivity extends Activity {
 	Button submitZipBtn;
 	EditText zipEditText;
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.fragment_home, container,
-				false);
-		submitZipBtn = (Button) rootView.findViewById(R.id.submitZip);
-		zipEditText = (EditText) rootView.findViewById(R.id.zipEditText);
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_home);
+		submitZipBtn = (Button) findViewById(R.id.submitZip);
+		zipEditText = (EditText) findViewById(R.id.zipEditText);
 		submitZipBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent();
+				Intent intent = new Intent(HomeActivity.this, NearbyTheatresActivity.class);
 				intent.putExtra(MainActivity.ZIPCODE_KEY + "", zipEditText
 						.getText().toString());
-				((MainActivity) getActivity()).onActivityResult(
-						MainActivity.ZIPCODE_KEY, Activity.RESULT_OK, intent);
+				startActivity(intent);
 			}
 		});
-		return rootView;
 	}
 
 	// onAttach:

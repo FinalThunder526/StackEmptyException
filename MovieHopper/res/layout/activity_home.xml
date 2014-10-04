@@ -36,4 +36,13 @@
         android:text="Submit">
     </Button>
 
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/titleView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="51dp"
+        android:src="@drawable/abc_ab_bottom_solid_dark_holo" />
+    
 </RelativeLayout>
