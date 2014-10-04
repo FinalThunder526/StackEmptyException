@@ -1,4 +1,6 @@
-package com.stackempty.moviehopper;
+package com.stackempty.moviehoppr;
+
+import com.stackempty.moviehopper.R;
 
 import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
