@@ -8,6 +8,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -22,6 +23,9 @@ import android.widget.TextView;
 
 public class MainActivity extends ActionBarActivity implements
 		NavigationDrawerFragment.NavigationDrawerCallbacks {
+
+	public static final String TMSAPI_KEY = "kcabtt7gmfemuzm949nex5dv";
+	public static final int ZIPCODE_KEY = 0;
 
 	/**
 	 * Fragment managing the behaviors, interactions and presentation of the
@@ -102,5 +106,17 @@ public class MainActivity extends ActionBarActivity implements
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		if (requestCode == ZIPCODE_KEY) {
+			if (resultCode == RESULT_OK) {
+				FragmentManager fragmentManager = getSupportFragmentManager();
+				fragmentManager.beginTransaction()
+						.replace(R.id.container, NearbyTheatersFragment.newInstance(intent.getIntExtra("" + ZIPCODE_KEY, 0)))
+						.commit();
+			}
+		}
 	}
 }
