@@ -4,12 +4,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <ExpandableListView
-        android:id="@+id/theatreList"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:drawSelectorOnTop="true" >
-    </ExpandableListView>
+    <TextView
+        android:id="@+id/tvListItem"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="30sp"
+        android:padding="5dp" />
 
 </LinearLayout>

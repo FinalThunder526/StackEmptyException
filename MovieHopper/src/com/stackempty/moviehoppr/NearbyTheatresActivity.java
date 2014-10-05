@@ -6,42 +6,46 @@
 
 package com.stackempty.moviehoppr;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import android.app.ListActivity;
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
-import android.util.Log;
+import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Toast;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.TextView;
 
 import com.stackempty.moviehopper.R;
 
-public class NearbyTheatresActivity extends ListActivity {
+public class NearbyTheatresActivity extends Activity {
 	String baseEndpoint = "http://data.tmsapi.com/v1/";
+	public static final String CLOSE = "&api_key=" + MainActivity.TMSAPI_KEY;
 
-	String[] theatreStringArray;
+	private List<Theatre> mTheatreList;
+
+	private ExpandableListAdapter mExpListAdapter;
+	private ExpandableListView mExpListView;
+
+	ProgressDialog pd;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_nearbytheatres);
+
+		mExpListView = (ExpandableListView) findViewById(R.id.theatreList);
 
 		Intent intent = getIntent();
 		int zip = Integer.parseInt(intent.getStringExtra(""
@@ -57,99 +61,186 @@ public class NearbyTheatresActivity extends ListActivity {
 	 * @author Sarang
 	 */
 	private class GetTheatresTask extends AsyncTask<Integer, Void, JSONArray> {
-		ProgressDialog pd;
-
-		@Override
 		protected void onPreExecute() {
 			pd = ProgressDialog.show(NearbyTheatresActivity.this, "",
-					"Downloading information...");
+					"Downloading details...");
 		}
 
 		@Override
 		protected JSONArray doInBackground(Integer... params) {
-			return getTheaters(params[0]);
-		}
-
-		private JSONArray getTheaters(int zip) {
-			String hRequest = "http://data.tmsapi.com/v1/theatres?zip=" + zip
-					+ "&api_key=" + MainActivity.TMSAPI_KEY;
-
-			BufferedReader in = null;
-
-			try {
-				HttpClient hClient = new DefaultHttpClient();
-				HttpGet request = new HttpGet();
-				URI website = new URI(hRequest);
-				request.setURI(website);
-
-				// HttpParams params = new BasicHttpParams();
-				// params.setParameter("zip", zip + "");
-				// params.setParameter("api_key", MainActivity.TMSAPI_KEY);
-				// request.setParams(params);
-
-				HttpResponse response = hClient.execute(request);
-				in = new BufferedReader(new InputStreamReader(response
-						.getEntity().getContent()));
-				String json = in.readLine();
-				JSONTokener tokener = new JSONTokener(json);
-				return new JSONArray(tokener);
-			} catch (Exception e) {
-				return null;
-			}
+			String hRequest = baseEndpoint + "theatres?zip=" + params[0]
+					+ CLOSE;
+			return Network.getHttpRequest(hRequest);
 		}
 
 		@Override
 		protected void onPostExecute(JSONArray result) {
-			pd.dismiss();
-			// OFFLINE: Parses theatre data into ListView
-			new LoadTheatreDetails().execute(result);
+			// OFFLINE: Parse out the JSONArray
+			mTheatreList = parseJSONTheatreArray(result);
+
+			// ONLINE: Download individual theatre showtimes
+			new GetMoviesTask().execute(getToday(), "5");
 		}
 	}
 
 	/**
-	 * Loads the downloaded theatre details (parameterized as a JSONArray) to
-	 * the Fragment's ListView.
+	 * 0 = startDate<br>
+	 * 1 = numDays
 	 * 
 	 * @author Sarang
+	 * 
 	 */
-	private class LoadTheatreDetails extends
-			AsyncTask<JSONArray, Void, String[]> {
-		ProgressDialog pd;
-
+	private class GetMoviesTask extends AsyncTask<String, Void, JSONArray[]> {
 		@Override
-		protected void onPreExecute() {
-			pd = ProgressDialog.show(NearbyTheatresActivity.this, "",
-					"Loading information...");
-		}
-
-		@Override
-		protected String[] doInBackground(JSONArray... params) {
-			JSONArray myArray = params[0];
-			String[] stringArray = new String[myArray.length()];
-			try {
-				for (int i = 0; i < myArray.length(); i++) {
-					JSONObject obj = myArray.getJSONObject(i);
-					String s = obj.getString("name");
-					s += ", id:" + obj.getString("theatreId");
-					stringArray[i] = s;
-				}
-			} catch (JSONException e) {
-				return null;
+		protected JSONArray[] doInBackground(String... params) {
+			JSONArray[] movieCollection = new JSONArray[mTheatreList.size()];
+			for (int i = 0; i < mTheatreList.size(); i++) {
+				String hRequest = baseEndpoint + "theatres/"
+						+ mTheatreList.get(i).getId() + "/showings?startDate="
+						+ params[0] + "&numDays=" + params[1] + CLOSE;
+				movieCollection[i] = Network.getHttpRequest(hRequest);
 			}
-			return stringArray;
+			return movieCollection;
 		}
 
-		@Override
-		protected void onPostExecute(String[] result) {
+		protected void onPostExecute(JSONArray[] result) {
+			for (int i = 0; i < result.length; i++) {
+				mTheatreList.get(i).setMovies(parseJSONMovieArray(result[i]));
+			}
 			pd.dismiss();
 
-			setListAdapter(new ArrayAdapter<String>(
-					NearbyTheatresActivity.this,
-					android.R.layout.simple_list_item_1, result));
-
-			Toast.makeText(NearbyTheatresActivity.this,
-					"Theatre loading success: " + result, Toast.LENGTH_SHORT)
-					.show();
+			mExpListAdapter = new ExpandableListAdapter(
+					NearbyTheatresActivity.this);
+			mExpListView.setAdapter(mExpListAdapter);
 		}
+	}
+
+	/**
+	 * Parses a JSONArray of movies into a List of Movie objects.
+	 * 
+	 * @param movies
+	 *            a JSONArray of movies based on the OnConnect API's.
+	 * @return a list of Movie objects with corresponding data fields.
+	 */
+	private List<Movie> parseJSONMovieArray(JSONArray movies) {
+		List<Movie> movieArray = new ArrayList<Movie>();
+		try {
+			for (int i = 0; i < movies.length(); i++) {
+				JSONObject obj = movies.getJSONObject(i);
+				movieArray.add(new Movie(obj));
+			}
+		} catch (JSONException e) {
+			return null;
+		}
+		return movieArray;
+	}
+
+	public String getToday() {
+		Time x = new Time();
+		x.setToNow();
+		return x.year + "-" + (x.month < 9 ? "0" : "") + (x.month + 1) + "-"
+				+ (x.monthDay < 10 ? "0" : "") + x.monthDay;
+	}
+
+	private List<Theatre> parseJSONTheatreArray(JSONArray theatres) {
+		List<Theatre> theatreArray = new ArrayList<Theatre>();
+		try {
+			for (int i = 0; i < theatres.length(); i++) {
+				JSONObject obj = theatres.getJSONObject(i);
+				theatreArray.add(new Theatre(obj));
+			}
+		} catch (JSONException e) {
+			return null;
+		}
+		return theatreArray;
+	}
+
+	private class ExpandableListAdapter extends BaseExpandableListAdapter {
+		Context mContext;
+
+		public ExpandableListAdapter(Context context) {
+			mContext = context;
+		}
+
+		@Override
+		public int getGroupCount() {
+			// how many theatres are nearby
+			return mTheatreList.size();
+		}
+
+		@Override
+		public int getChildrenCount(int groupPosition) {
+			// how many movies are in the given theatre
+			return (mTheatreList.get(groupPosition)).getMovies().size();
+		}
+
+		@Override
+		public Object getGroup(int groupPosition) {
+			return mTheatreList.get(groupPosition);
+		}
+
+		@Override
+		public Object getChild(int groupPosition, int childPosition) {
+			return mTheatreList.get(groupPosition).getMovies()
+					.get(childPosition);
+		}
+
+		@Override
+		public long getGroupId(int groupPosition) {
+			return groupPosition;
+		}
+
+		@Override
+		public long getChildId(int groupPosition, int childPosition) {
+			return childPosition;
+		}
+
+		@Override
+		public boolean hasStableIds() {
+			return false;
+		}
+
+		@Override
+		public View getGroupView(int groupPosition, boolean isExpanded,
+				View convertView, ViewGroup parent) {
+			String theatreName = ((Theatre) getGroup(groupPosition)).getName();
+			if (convertView == null) {
+				LayoutInflater inflater = (LayoutInflater) this.mContext
+						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				convertView = inflater.inflate(R.layout.list_group, null);
+			}
+
+			TextView lblListHeader = (TextView) convertView
+					.findViewById(R.id.tvListHeader);
+			lblListHeader.setTypeface(null, Typeface.BOLD);
+			lblListHeader.setText(theatreName);
+
+			return convertView;
+		}
+
+		@Override
+		public View getChildView(int groupPosition, int childPosition,
+				boolean isLastChild, View convertView, ViewGroup parent) {
+			final String movieName = ((Movie) getChild(groupPosition,
+					childPosition)).toString();
+
+			if (convertView == null) {
+				LayoutInflater inflater = (LayoutInflater) this.mContext
+						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				convertView = inflater.inflate(R.layout.list_item, null);
+			}
+
+			TextView txtListChild = (TextView) convertView
+					.findViewById(R.id.tvListItem);
+
+			txtListChild.setText(movieName);
+			return convertView;
+		}
+
+		@Override
+		public boolean isChildSelectable(int groupPosition, int childPosition) {
+			return false;
+		}
+
 	}
 }

@@ -11,7 +11,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="149dp"
         android:text="@string/app_name"
-        android:textAppearance="?android:attr/textAppearanceLarge">
+        android:textAppearance="?android:attr/textAppearanceLarge" >
     </TextView>
 
     <EditText
@@ -21,9 +21,10 @@
         android:layout_below="@+id/titleView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:hint="Enter ZIP Code"
         android:ems="10"
-        android:inputType="number">
+        android:hint="Enter ZIP Code"
+        android:inputType="number"
+        android:textAlignment="center" >
     </EditText>
 
     <Button
@@ -33,7 +34,7 @@
         android:layout_below="@+id/zipEditText"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="18dp"
-        android:text="Submit">
+        android:text="Submit" >
     </Button>
 
     <ImageView
@@ -43,6 +44,6 @@
         android:layout_alignBottom="@+id/titleView"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="51dp"
-        android:src="@drawable/abc_ab_bottom_solid_dark_holo" />
-    
+        android:src="@drawable/logo" />
+
 </RelativeLayout>
