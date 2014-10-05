@@ -9,8 +9,6 @@ package com.stackempty.moviehoppr;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.datatype.Duration;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

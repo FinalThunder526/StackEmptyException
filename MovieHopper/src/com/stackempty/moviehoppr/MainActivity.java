@@ -9,9 +9,6 @@ import com.stackempty.moviehopper.R;
 
 public class MainActivity extends ActionBarActivity {
 
-	public static final String TMSAPI_KEY = "kcabtt7gmfemuzm949nex5dv";
-	public static final int ZIPCODE_KEY = 1;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

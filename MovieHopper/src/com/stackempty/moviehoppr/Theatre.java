@@ -6,6 +6,7 @@
 
 package com.stackempty.moviehoppr;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONException;
@@ -35,7 +36,12 @@ public class Theatre {
 	}
 
 	public void setMovies(List<Movie> list) {
-		mMovies = list;
+		mMovies = new ArrayList<Movie>();
+		for (int i = 0; i < list.size(); i++) {
+			Movie m = list.get(i);
+			if (m != null)
+				mMovies.add(list.get(i));
+		}
 	}
 
 	public int getId() {

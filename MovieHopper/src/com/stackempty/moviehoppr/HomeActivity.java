@@ -23,6 +23,10 @@ public class HomeActivity extends Activity {
 	Button submitZipBtn;
 	EditText zipEditText;
 
+	public static final String THEATRE_INDEX = "thtr";
+	public static final String TMSAPI_KEY = "kcabtt7gmfemuzm949nex5dv";
+	public static final int ZIPCODE_KEY = 1;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -32,8 +36,9 @@ public class HomeActivity extends Activity {
 		submitZipBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(HomeActivity.this, NearbyTheatresActivity.class);
-				intent.putExtra(MainActivity.ZIPCODE_KEY + "", zipEditText
+				Intent intent = new Intent(HomeActivity.this,
+						NearbyTheatresActivity.class);
+				intent.putExtra(ZIPCODE_KEY + "", zipEditText
 						.getText().toString());
 				startActivity(intent);
 			}

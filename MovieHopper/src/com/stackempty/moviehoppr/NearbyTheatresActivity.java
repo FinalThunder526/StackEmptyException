@@ -23,24 +23,29 @@ import android.os.Bundle;
 import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.app.ActionBar;
+import android.view.MenuItem;
 
 import com.stackempty.moviehopper.R;
 
 public class NearbyTheatresActivity extends Activity {
 	String baseEndpoint = "http://data.tmsapi.com/v1/";
-	public static final String CLOSE = "&api_key=" + MainActivity.TMSAPI_KEY;
+	public static final String CLOSE = "&api_key=" + HomeActivity.TMSAPI_KEY;
 
-	private List<Theatre> mTheatreList;
+	//private List<Theatre> mTheatreList;
 
 	private ExpandableListAdapter mExpListAdapter;
 	private ExpandableListView mExpListView;
 
 	ProgressDialog pd;
 
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_nearbytheatres);
@@ -49,9 +54,12 @@ public class NearbyTheatresActivity extends Activity {
 
 		Intent intent = getIntent();
 		int zip = Integer.parseInt(intent.getStringExtra(""
-				+ MainActivity.ZIPCODE_KEY));
+				+ HomeActivity.ZIPCODE_KEY));
 
 		new GetTheatresTask().execute(zip);
+
+		ActionBar ab = getActionBar();
+		ab.setDisplayHomeAsUpEnabled(true);
 	}
 
 	/**
@@ -76,7 +84,7 @@ public class NearbyTheatresActivity extends Activity {
 		@Override
 		protected void onPostExecute(JSONArray result) {
 			// OFFLINE: Parse out the JSONArray
-			mTheatreList = parseJSONTheatreArray(result);
+			Data.mTheatreList = parseJSONTheatreArray(result);
 
 			// ONLINE: Download individual theatre showtimes
 			new GetMoviesTask().execute(getToday(), "5");
@@ -93,10 +101,10 @@ public class NearbyTheatresActivity extends Activity {
 	private class GetMoviesTask extends AsyncTask<String, Void, JSONArray[]> {
 		@Override
 		protected JSONArray[] doInBackground(String... params) {
-			JSONArray[] movieCollection = new JSONArray[mTheatreList.size()];
-			for (int i = 0; i < mTheatreList.size(); i++) {
+			JSONArray[] movieCollection = new JSONArray[Data.mTheatreList.size()];
+			for (int i = 0; i < Data.mTheatreList.size(); i++) {
 				String hRequest = baseEndpoint + "theatres/"
-						+ mTheatreList.get(i).getId() + "/showings?startDate="
+						+ Data.mTheatreList.get(i).getId() + "/showings?startDate="
 						+ params[0] + "&numDays=" + params[1] + CLOSE;
 				movieCollection[i] = Network.getHttpRequest(hRequest);
 			}
@@ -105,7 +113,7 @@ public class NearbyTheatresActivity extends Activity {
 
 		protected void onPostExecute(JSONArray[] result) {
 			for (int i = 0; i < result.length; i++) {
-				mTheatreList.get(i).setMovies(parseJSONMovieArray(result[i]));
+				Data.mTheatreList.get(i).setMovies(parseJSONMovieArray(result[i]));
 			}
 			pd.dismiss();
 
@@ -124,13 +132,13 @@ public class NearbyTheatresActivity extends Activity {
 	 */
 	private List<Movie> parseJSONMovieArray(JSONArray movies) {
 		List<Movie> movieArray = new ArrayList<Movie>();
-		try {
-			for (int i = 0; i < movies.length(); i++) {
+		for (int i = 0; i < movies.length(); i++) {
+			try {
 				JSONObject obj = movies.getJSONObject(i);
 				movieArray.add(new Movie(obj));
+			} catch (JSONException e) {
+				movieArray.add(null);
 			}
-		} catch (JSONException e) {
-			return null;
 		}
 		return movieArray;
 	}
@@ -165,23 +173,23 @@ public class NearbyTheatresActivity extends Activity {
 		@Override
 		public int getGroupCount() {
 			// how many theatres are nearby
-			return mTheatreList.size();
+			return Data.mTheatreList.size();
 		}
 
 		@Override
 		public int getChildrenCount(int groupPosition) {
 			// how many movies are in the given theatre
-			return (mTheatreList.get(groupPosition)).getMovies().size();
+			return (Data.mTheatreList.get(groupPosition)).getMovies().size();
 		}
 
 		@Override
 		public Object getGroup(int groupPosition) {
-			return mTheatreList.get(groupPosition);
+			return Data.mTheatreList.get(groupPosition);
 		}
 
 		@Override
 		public Object getChild(int groupPosition, int childPosition) {
-			return mTheatreList.get(groupPosition).getMovies()
+			return Data.mTheatreList.get(groupPosition).getMovies()
 					.get(childPosition);
 		}
 
@@ -203,11 +211,21 @@ public class NearbyTheatresActivity extends Activity {
 		@Override
 		public View getGroupView(int groupPosition, boolean isExpanded,
 				View convertView, ViewGroup parent) {
+			final int i = groupPosition; 
 			String theatreName = ((Theatre) getGroup(groupPosition)).getName();
 			if (convertView == null) {
 				LayoutInflater inflater = (LayoutInflater) this.mContext
 						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				convertView = inflater.inflate(R.layout.list_group, null);
+				ImageButton selBtn = (ImageButton) convertView.findViewById(R.id.selectTheatreBtn);
+				selBtn.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						Intent intent = new Intent(NearbyTheatresActivity.this, TheatreShowtimesActivity.class);
+						intent.putExtra(HomeActivity.THEATRE_INDEX, i);
+						startActivity(intent);
+					}
+				});
 			}
 
 			TextView lblListHeader = (TextView) convertView

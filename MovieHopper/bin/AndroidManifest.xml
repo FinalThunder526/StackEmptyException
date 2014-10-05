@@ -32,6 +32,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.stackempty.moviehoppr.HomeActivity" />
         </activity>
+        <activity
+            android:name="com.stackempty.moviehoppr.TheatreShowtimesActivity"
+            android:label="@string/app_name"
+            android:parentActivityName="com.stackempty.moviehoppr.NearbyTheatresActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.stackempty.moviehoppr.NearbyTheatresActivity" />
+        </activity>
     </application>
 
 </manifest>
