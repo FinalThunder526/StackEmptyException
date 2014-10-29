@@ -7,7 +7,7 @@
 }
 
 body {
-	background-image: url('trianglify-background.svg');
+	background-image: url("images/trianglify-background.svg");
 	background-repeat: no-repeat;
 	-webkit-background-size: cover;
     -moz-background-size: cover;
