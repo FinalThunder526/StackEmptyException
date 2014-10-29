@@ -1,0 +1,43 @@
+* {
+	font-family: "Candara", "Monaco";
+}
+
+body {
+	background-color:#6A6968;
+	text-align: center;
+}
+header {
+	width: auto;
+	height: 30%;
+	margin-left: 200px;
+}
+
+header li{
+	color:#ffffff;
+	font-size: 70px;
+	list-style-image: url('MovieHoppr0.png');
+	text-align: left;
+}
+
+ul{
+	list-style: none;
+
+}
+
+footer{
+	margin:auto;
+}
+footer li{
+	float: left;
+	padding-left: 10px
+
+}
+
+img {
+ 	display: block;
+ 	margin-left: 100px;
+ 	margin auto;
+ 	vertical-align: middle;
+ }
+
+
