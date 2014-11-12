@@ -9,12 +9,19 @@ package com.stackempty.moviehoppr;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.stackempty.moviehopper.R;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -24,59 +31,120 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.stackempty.moviehopper.R;
+
 public class TheatreShowtimesActivity extends Activity {
-	TextView theatreNameTv;
-	ListView movieListView;
-	
-	private Boolean[] selectedMovies;
+	TextView mTheatreNameTv;
+	ListView mMovieListView;
+
+	private int mIndex;
 	private Theatre t;
+
+	ProgressDialog mDialog;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_theatreshowtimes);
 
-		int index = getIntent().getIntExtra(HomeActivity.THEATRE_INDEX, 0);
-		t = Data.mTheatreList.get(index);
+		mIndex = getIntent().getIntExtra(HomeActivity.THEATRE_INDEX, 0);
+		t = Data.mTheatreList.get(mIndex);
 
-		theatreNameTv = (TextView) findViewById(R.id.theatreName);
-		theatreNameTv.setText(t.getName());
+		mMovieListView = (ListView) findViewById(R.id.movieList);
 		
-		movieListView = (ListView) findViewById(R.id.movieList);
-		movieListView.setAdapter(new MovieArrayAdapter(this, t.getMovies()));
-		
-		selectedMovies = new Boolean[t.getMovies().size()];
+		mTheatreNameTv = (TextView) findViewById(R.id.theatreName);
+		mTheatreNameTv.setText(t.getName());
+
+		Time t = new Time();
+		t.setToNow();
+
+		String startDate = "" + t.year + "-"
+				+ ((t.month < 9) ? "0" + (t.month + 1) : t.month + 1) + "-"
+				+ ((t.monthDay < 10) ? "0" + t.monthDay : t.monthDay);
+		String numDays = "5";
+		new GetMoviesTask().execute(startDate, numDays);
 	}
-	
+
+	public boolean onCreateOptionsMenu(Menu menu) {
+		Menu actionBar = menu;
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.tshowtimes, actionBar);
+		return super.onCreateOptionsMenu(actionBar);
+	}
+
+	/**
+	 * 0 = startDate yyyy-mm-dd<br>
+	 * 1 = numDays
+	 * 
+	 * @author Sarang
+	 * 
+	 */
+	private class GetMoviesTask extends AsyncTask<String, Void, JSONArray[]> {
+		@Override
+		protected void onPreExecute() {
+			mDialog = ProgressDialog.show(TheatreShowtimesActivity.this, "",
+					"Downloading movies...");
+		}
+
+		@Override
+		protected JSONArray[] doInBackground(String... params) {
+			JSONArray[] movieCollection = new JSONArray[Data.mTheatreList
+					.size()];
+			for (int i = 0; i < Data.mTheatreList.size(); i++) {
+				String hRequest = Data.baseEndpoint + "theatres/"
+						+ Data.mTheatreList.get(i).getId()
+						+ "/showings?startDate=" + params[0] + "&numDays="
+						+ params[1] + Data.CLOSE;
+				movieCollection[i] = Network.getHttpRequest(hRequest);
+			}
+			return movieCollection;
+		}
+
+		@Override
+		protected void onPostExecute(JSONArray[] result) {
+			t.setMovies(parseJSONMovieArray(result[mIndex]));
+
+			ArrayAdapter<String> a = new ArrayAdapter<String>(TheatreShowtimesActivity.this, android.R.layout.simple_list_item_1);
+			for(Movie m : t.getMovies()) {
+				a.add(m.toString());
+			}
+			mMovieListView.setAdapter(a);
+			
+			mDialog.dismiss();
+
+			// mExpListAdapter = new
+			// ExpandableListAdapter(NearbyTheatresActivity.this);
+			// mExpListView.setAdapter(mExpListAdapter);
+		}
+	}
+
+	/**
+	 * Parses a JSONArray of movies into a List of Movie objects.
+	 * 
+	 * @param movies
+	 *            a JSONArray of movies based on the OnConnect API's.
+	 * @return a list of Movie objects with corresponding data fields.
+	 */
+	private List<Movie> parseJSONMovieArray(JSONArray movies) {
+		List<Movie> movieArray = new ArrayList<Movie>();
+		for (int i = 0; i < movies.length(); i++) {
+			try {
+				JSONObject obj = movies.getJSONObject(i);
+				movieArray.add(new Movie(obj));
+			} catch (JSONException e) {
+				movieArray.add(null);
+			}
+		}
+		return movieArray;
+	}
+
 	private class MovieArrayAdapter extends ArrayAdapter<Movie> {
 		List<Movie> mMovies;
 		Context mContext;
-		
+
 		public MovieArrayAdapter(Context context, List<Movie> movies) {
 			super(context, R.layout.list_movie, movies);
 			mContext = context;
 			mMovies = movies;
-		}
-		
-		public View getView(int position, View convertView, ViewGroup parent) {
-			LayoutInflater inflater = (LayoutInflater) mContext
-					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			
-			final int i = position;
-
-			View rowView = inflater.inflate(R.layout.list_movie, parent, false);
-			
-			CheckBox x = (CheckBox) rowView.findViewById(R.id.movieTitle);
-			x.setText(mMovies.get(position).toString());
-			//if(selectedMovies != null)
-			//	x.setChecked(selectedMovies[i]);
-			x.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-				@Override
-				public void onCheckedChanged(CompoundButton buttonView,
-						boolean isChecked) {
-					selectedMovies[i] = isChecked;
-				}
-			});
-			return rowView;
 		}
 	}
 }

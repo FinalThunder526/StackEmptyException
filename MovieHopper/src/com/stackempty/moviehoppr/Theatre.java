@@ -12,6 +12,11 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Encapsulates the details of a theatre.
+ * 
+ * @author Sarang
+ */
 public class Theatre {
 	private List<Movie> mMovies;
 	private String mName;
@@ -27,6 +32,23 @@ public class Theatre {
 		}
 	}
 
+	public Theatre(String id, String name) {
+		try {
+			int i = Integer.parseInt(id);
+			mId = i;
+			mName = name;
+		} catch (Exception e) {
+		}
+	}
+
+	public Theatre(int id, String name) {
+		mId = id;
+		mName = name;
+	}
+
+	/**
+	 * Gets the name of this theatre.
+	 */
 	public String getName() {
 		return mName;
 	}
@@ -46,5 +68,10 @@ public class Theatre {
 
 	public int getId() {
 		return mId;
+	}
+
+	@Override
+	public String toString() {
+		return mId + " " + mName;
 	}
 }
