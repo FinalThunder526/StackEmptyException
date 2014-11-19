@@ -3,6 +3,7 @@
 
     <item
         android:id="@+id/go"
+        android:showAsAction="always"
         android:title="Go!">
     </item>
 

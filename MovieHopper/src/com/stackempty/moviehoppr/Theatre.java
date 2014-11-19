@@ -74,4 +74,8 @@ public class Theatre {
 	public String toString() {
 		return mId + " " + mName;
 	}
+
+	public Movie getMovie(int movieN) {
+		return mMovies.get(movieN);
+	}
 }

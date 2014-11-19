@@ -14,6 +14,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -32,8 +35,13 @@ public class Data {
 
 	public Data(Context context) {
 		mContext = context;
-		mPref = mContext.getSharedPreferences(NEARBY_THEATRES_PREF,
-				Context.MODE_PRIVATE);
+		setupPref();
+	}
+
+	public void setupPref() {
+		if (mPref == null)
+			mPref = mContext.getSharedPreferences(NEARBY_THEATRES_PREF,
+					Context.MODE_PRIVATE);
 	}
 
 	/**
@@ -90,10 +98,55 @@ public class Data {
 	 * Gets the current zip code that has been searched by the user.
 	 */
 	public int getZipCode() {
+		setupPref();
 		return mPref.getInt(ZIP_KEY, -1);
 	}
 
+	/**
+	 * Saves zip code.
+	 */
 	public boolean saveZipCode(int zip) {
+		setupPref();
 		return mPref.edit().putInt(ZIP_KEY, zip).commit();
+	}
+
+	public boolean saveMovies(List<Movie> movies) {
+		boolean a = true;
+		for (Movie m : movies) {
+			a = a && saveMovie(m);
+		}
+		return a;
+	}
+
+	/**
+	 * Saves the movie's JSON object as a simple string.
+	 * 
+	 * @param m
+	 *            the movie we're saving
+	 * @return
+	 */
+	public boolean saveMovie(Movie m) {
+		setupPref();
+		return mPref.edit().putString(m.getId(), m.getJsonObject().toString())
+				.commit();
+	}
+
+	public String getMovie(String id) {
+		setupPref();
+		return mPref.getString(id, "");
+	}
+
+	/**
+	 * Parses out all the values in the JSONArray.
+	 */
+	public static List<String> parseArray(JSONArray jsonArray) {
+		List<String> l = new ArrayList<String>();
+		for (int i = 0; i < jsonArray.length(); i++) {
+			try {
+				l.add((String) jsonArray.get(i));
+			} catch (JSONException e) {
+			}
+		}
+		return l;
 	}
 }

@@ -9,11 +9,9 @@ package com.stackempty.moviehoppr;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -36,13 +34,32 @@ public class HomeActivity extends Activity {
 		submitZipBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(HomeActivity.this,
-						NearbyTheatresActivity.class);
-				intent.putExtra(ZIPCODE_KEY + "", zipEditText
-						.getText().toString());
-				startActivity(intent);
+				if (isZipValid(zipEditText.getText().toString())) {
+					Intent intent = new Intent(HomeActivity.this,
+							NearbyTheatresActivity.class);
+					intent.putExtra(ZIPCODE_KEY + "", zipEditText.getText()
+							.toString());
+					startActivity(intent);
+				} else {
+					Log.d("illegal-zip", "Illegal ZIP code");
+				}
 			}
 		});
+	}
+
+	/**
+	 * Checks if the given zip is valid.
+	 * 
+	 * @param zip
+	 *            the ZIP code to check for
+	 */
+	private boolean isZipValid(String zip) {
+		try {
+			int z = Integer.parseInt(zip);
+			return (z > 9999 && z < 100000);
+		} catch (NumberFormatException e) {
+			return false;
+		}
 	}
 
 	// onAttach:

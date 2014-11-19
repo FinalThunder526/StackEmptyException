@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -24,6 +25,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -50,7 +53,7 @@ public class TheatreShowtimesActivity extends Activity {
 		t = Data.mTheatreList.get(mIndex);
 
 		mMovieListView = (ListView) findViewById(R.id.movieList);
-		
+
 		mTheatreNameTv = (TextView) findViewById(R.id.theatreName);
 		mTheatreNameTv.setText(t.getName());
 
@@ -103,12 +106,26 @@ public class TheatreShowtimesActivity extends Activity {
 		protected void onPostExecute(JSONArray[] result) {
 			t.setMovies(parseJSONMovieArray(result[mIndex]));
 
-			ArrayAdapter<String> a = new ArrayAdapter<String>(TheatreShowtimesActivity.this, android.R.layout.simple_list_item_1);
-			for(Movie m : t.getMovies()) {
-				a.add(m.toString());
+			ArrayAdapter<String> a = new ArrayAdapter<String>(
+					TheatreShowtimesActivity.this,
+					android.R.layout.simple_list_item_1);
+			for (Movie m : t.getMovies()) {
+				if (m.getId() != null)
+					a.add(m.toString());
 			}
 			mMovieListView.setAdapter(a);
-			
+			mMovieListView.setOnItemClickListener(new OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view,
+						int position, long id) {
+					Intent intent = new Intent(TheatreShowtimesActivity.this,
+							MovieDetailsActivity.class);
+					intent.putExtra(MovieDetailsActivity.THEATRE_N_KEY, mIndex);
+					intent.putExtra(MovieDetailsActivity.MOVIE_N_KEY, position);
+					startActivity(intent);
+				}
+			});
+
 			mDialog.dismiss();
 
 			// mExpListAdapter = new

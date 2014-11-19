@@ -64,7 +64,7 @@ public class NearbyTheatresActivity extends Activity {
 		});
 
 		d = new Data(this);
-		
+
 		// Gets the current zip code
 		Intent intent = getIntent();
 		int zip = -1;
@@ -122,7 +122,7 @@ public class NearbyTheatresActivity extends Activity {
 			Data.mTheatreList = parseJSONTheatreArray(result);
 
 			updateListData();
-			
+
 			d.saveTheatres(Data.mTheatreList);
 
 			mDialog.dismiss();
@@ -131,7 +131,7 @@ public class NearbyTheatresActivity extends Activity {
 		}
 	}
 
-	public void updateListData() {
+	private void updateListData() {
 		ArrayAdapter<String> s = new ArrayAdapter<String>(this,
 				android.R.layout.simple_list_item_1);
 		for (Theatre t : Data.mTheatreList) {
@@ -140,7 +140,7 @@ public class NearbyTheatresActivity extends Activity {
 		mTheatreList.setAdapter(s);
 	}
 
-	public String getToday() {
+	private String getToday() {
 		Time x = new Time();
 		x.setToNow();
 		return x.year + "-" + (x.month < 9 ? "0" : "") + (x.month + 1) + "-"
