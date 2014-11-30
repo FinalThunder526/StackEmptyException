@@ -16,6 +16,8 @@ import org.json.JSONObject;
 import android.text.format.Time;
 
 public class Movie {
+	private static final String MOVIE_PICTURE_URI_TAG = "uri";
+
 	private String mId;
 	private String mTitle;
 	private String mShortDescription;
@@ -85,5 +87,13 @@ public class Movie {
 
 	public JSONObject getImage() {
 		return mImage;
+	}
+
+	public String getImageUri() {
+		try {
+			return (String) mImage.get(MOVIE_PICTURE_URI_TAG);
+		} catch (JSONException e) {
+			return null;
+		}
 	}
 }
